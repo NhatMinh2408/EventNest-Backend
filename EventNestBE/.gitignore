@@ -1,0 +1,7 @@
+# Bỏ qua thư mục VS
+.vs/
+bin/
+obj/
+
+# Bỏ qua cấu hình bảo mật
+appsettings.json
