@@ -1,3 +1,7 @@
 <Solution>
+  <Project Path="../EventNestFE/EventNestFE/eventnestfe.esproj">
+    <Build />
+    <Deploy />
+  </Project>
   <Project Path="EventNestBE/EventNestBE.csproj" />
 </Solution>

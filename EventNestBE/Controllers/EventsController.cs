@@ -109,9 +109,15 @@ namespace EventNestBE.Controllers
             existingEvent.Location = updatedEvent.Location;
             existingEvent.StartTime = updatedEvent.StartTime;
             existingEvent.EndTime = updatedEvent.EndTime;
+            existingEvent.Address = updatedEvent.Address;
             existingEvent.MaxAttendees = updatedEvent.MaxAttendees;
             existingEvent.BannerUrl = updatedEvent.BannerUrl;
             existingEvent.Status = updatedEvent.Status;
+
+            // --- THÊM 3 DÒNG NÀY CHO TÍNH NĂNG MỚI ---
+            existingEvent.RegistrationStartTime = updatedEvent.RegistrationStartTime;
+            existingEvent.RegistrationEndTime = updatedEvent.RegistrationEndTime;
+            existingEvent.TrainingPoints = updatedEvent.TrainingPoints;
 
             // Không cho phép đổi OrganizerId (Người tạo mặc định không đổi)
             // existingEvent.OrganizerId = updatedEvent.OrganizerId; 

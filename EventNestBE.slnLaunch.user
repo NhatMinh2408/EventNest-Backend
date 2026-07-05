@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "EventNestBE\\EventNestBE.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "..\\EventNestFE\\EventNestFE\\eventnestfe.esproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

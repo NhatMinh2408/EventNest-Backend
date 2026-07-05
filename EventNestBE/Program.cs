@@ -56,7 +56,13 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin() // Cho phép React ở bất kỳ port nào cũng gọi được
+                        .AllowAnyMethod() // Cho phép GET, POST, PUT, DELETE
+                        .AllowAnyHeader());
+});
 var app = builder.Build(); // <-- Tất cả cấu hình ở trên phải nằm TRÊN dòng này
 
 // Cấu hình hiển thị trang giao diện Swagger để test API
@@ -67,6 +73,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 

@@ -1,4 +1,5 @@
 ﻿using EventNestBE.Data;
+using EventNestBE.DTOs;
 using EventNestBE.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,17 +26,38 @@ namespace EventNestBE.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        [Authorize(Roles = "Admin")] // Vá lỗi lộ dữ liệu: Chỉ Admin mới được xem
+        public async Task<IActionResult> GetUsers(int page = 1, int pageSize = 10, string? search = null)
         {
-            var users = await _context.Users.ToListAsync();
-            return Ok(users);
-        }
+            var query = _context.Users.AsQueryable();
 
+            // Tìm kiếm theo tên hoặc MSSV
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(u => u.FullName.Contains(search) || u.Mssv.Contains(search));
+            }
+
+            var totalItems = await query.CountAsync();
+            var users = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            return Ok(new
+            {
+                TotalItems = totalItems,
+                Page = page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
+                Data = users
+            });
+        }
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(User user)
         {
+            // Kiểm tra xem Username HOẶC Mssv đã tồn tại chưa
             var userExists = await _context.Users.AnyAsync(u => u.Username == user.Username);
-            if (userExists) return BadRequest("Tài khoản (MSSV) này đã tồn tại!");
+            if (userExists) return BadRequest("Tài khoản (Username) này đã tồn tại!");
+
+            var mssvExists = await _context.Users.AnyAsync(u => u.Mssv == user.Mssv);
+            if (mssvExists) return BadRequest("Mã số sinh viên (MSSV) này đã được đăng ký!");
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
             _context.Users.Add(user);
@@ -48,7 +70,9 @@ namespace EventNestBE.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserLoginModel loginInfo)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == loginInfo.Username);
+            // Cho phép đăng nhập bằng Username HOẶC Mssv
+            var user = await _context.Users.FirstOrDefaultAsync(u =>
+                u.Username == loginInfo.Username || u.Mssv == loginInfo.Username);
 
             if (user == null || !BCrypt.Net.BCrypt.Verify(loginInfo.Password, user.PasswordHash))
             {
@@ -83,7 +107,8 @@ namespace EventNestBE.Controllers
             {
                 message = "Đăng nhập thành công!",
                 token = jwtToken, // Trả token về đây
-                role = user.Role
+                role = user.Role,
+                id = user.Id,
             });
         }
         // 1. Xem hồ sơ của MỘT người dùng (GET: api/users/{id})
@@ -102,13 +127,18 @@ namespace EventNestBE.Controllers
 
         // 2. Cập nhật thông tin cá nhân (PUT: api/users/{id})
         // Có thẻ [Authorize] để bắt buộc phải đăng nhập mới được sửa thông tin
+        // 2. Cập nhật thông tin cá nhân (PUT: api/users/{id})
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, User updatedUser)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateProfileDto updateDto)
         {
-            if (id != updatedUser.Id)
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+
+            // LOGIC MỚI: Chỉ chặn nếu người dùng KHÔNG phải Admin VÀ KHÔNG phải chủ tài khoản
+            if (userRole != "Admin" && (userIdClaim == null || int.Parse(userIdClaim) != id))
             {
-                return BadRequest(new { message = "ID không khớp!" });
+                return Forbid();
             }
 
             var existingUser = await _context.Users.FindAsync(id);
@@ -117,15 +147,17 @@ namespace EventNestBE.Controllers
                 return NotFound(new { message = "Không tìm thấy người dùng!" });
             }
 
-            // Chỉ cho phép cập nhật một số thông tin cơ bản
-            existingUser.FullName = updatedUser.FullName;
-            existingUser.Email = updatedUser.Email;
-
-            // LƯU Ý: Không cho phép cập nhật Username, Password hay Role ở hàm này!
+            existingUser.FullName = updateDto.FullName;
+            existingUser.Email = updateDto.Email;
+            existingUser.AvatarUrl = updateDto.AvatarUrl;
+            existingUser.Faculty = updateDto.Faculty;
+            existingUser.PhoneNumber = updateDto.PhoneNumber;
+            existingUser.DateOfBirth = updateDto.DateOfBirth;
+            existingUser.Cohort = updateDto.Cohort;
+            existingUser.Skills = updateDto.Skills;
 
             await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Cập nhật thông tin thành công!", data = existingUser });
+            return Ok(new { message = "Cập nhật thành công!", data = existingUser });
         }
 
         // 3. Xóa người dùng (DELETE: api/users/{id})
@@ -144,6 +176,31 @@ namespace EventNestBE.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Đã xóa người dùng thành công!" });
+        }
+        // 3. Thay đổi quyền truy cập (Role) (Chỉ Admin mới được làm)
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/role")]
+        public async Task<IActionResult> ChangeRole(int id, [FromBody] ChangeRoleDto dto)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound(new { message = "Không tìm thấy người dùng!" });
+
+            // Chỉ cho phép 2 quyền cơ bản để tránh lỗi gõ sai
+            if (dto.NewRole != "Admin" && dto.NewRole != "Student")
+            {
+                return BadRequest(new { message = "Quyền không hợp lệ! (Chỉ nhận 'Admin' hoặc 'Student')" });
+            }
+
+            user.Role = dto.NewRole;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"Đã cập nhật quyền thành {dto.NewRole} thành công!" });
+        }
+
+        // Tạo thêm Class DTO nhỏ này ở cuối file UsersController.cs
+        public class ChangeRoleDto
+        {
+            public string NewRole { get; set; } = string.Empty;
         }
         [Authorize] // Bắt buộc phải đăng nhập mới được đổi
             [HttpPut("change-password/{id}")]
@@ -181,4 +238,5 @@ namespace EventNestBE.Controllers
                 public string CurrentPassword { get; set; } = string.Empty;
                 public string NewPassword { get; set; } = string.Empty;
             }
+
         }
