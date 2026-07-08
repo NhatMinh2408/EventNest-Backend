@@ -1,6 +1,5 @@
 ﻿using EventNestBE.Data;
 using EventNestBE.Models;
-using EventNestBE.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -100,13 +99,13 @@ namespace EventNestBE.Controllers
         }
 
         // 2. API Điểm danh sinh viên bằng QR (PUT: api/registrations/checkin)
-        // 2. API Điểm danh sinh viên bằng QR (PUT: api/registrations/checkin)
-        [Authorize(Roles = "Admin")] // VÁ LỖ HỔNG: Chỉ có tài khoản Admin/BTC mới được quyền điểm danh
+        [Authorize(Roles = "Admin")]
         [HttpPut("checkin")]
-        public async Task<IActionResult> CheckIn(int eventId, int studentId)
+        public async Task<IActionResult> CheckIn([FromBody] CheckInDto dto)
         {
+            // Tìm đơn đăng ký dựa trên body truyền lên
             var registration = await _context.Registrations
-                .FirstOrDefaultAsync(r => r.EventId == eventId && r.StudentId == studentId);
+                .FirstOrDefaultAsync(r => r.EventId == dto.EventId && r.StudentId == dto.StudentId);
 
             if (registration == null)
             {
@@ -118,7 +117,7 @@ namespace EventNestBE.Controllers
                 return BadRequest(new { message = "Sinh viên này đã được điểm danh từ trước rồi!" });
             }
 
-            var targetEvent = await _context.Events.FindAsync(eventId);
+            var targetEvent = await _context.Events.FindAsync(dto.EventId);
             if (targetEvent == null)
             {
                 return NotFound(new { message = "Không tìm thấy sự kiện liên quan!" });
@@ -129,10 +128,12 @@ namespace EventNestBE.Controllers
                 return BadRequest(new { message = "Sự kiện này đã kết thúc, bạn không thể điểm danh được nữa!" });
             }
 
+            // Tiến hành check-in
             registration.IsCheckedIn = true;
             registration.CheckInTime = DateTime.UtcNow;
 
-            var student = await _context.Users.FindAsync(studentId);
+            // Cộng điểm rèn luyện
+            var student = await _context.Users.FindAsync(dto.StudentId);
             if (student != null)
             {
                 student.TrainingPoints += targetEvent.TrainingPoints;
@@ -190,10 +191,17 @@ namespace EventNestBE.Controllers
         }
         // 3. API Lấy danh sách tất cả sinh viên đăng ký MỘT sự kiện
         // 1. API Lấy danh sách đăng ký MỘT sự kiện (Có phân trang & lấy kèm tên, mssv)
+        // 1. API Lấy danh sách đăng ký MỘT sự kiện (Đã cập nhật Search, Filter & Thống kê)
         [HttpGet("event/{eventId}")]
-        public async Task<IActionResult> GetRegistrationsByEvent(int eventId, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetRegistrationsByEvent(
+            int eventId,
+            string? search = null,
+            string? faculty = null,
+            bool? isCheckedIn = null,
+            int page = 1,
+            int pageSize = 10)
         {
-            // Kết hợp bảng Registrations và Users để lấy thông tin sinh viên
+            // 1. Khởi tạo Query kết hợp bảng
             var query = _context.Registrations
                 .Where(r => r.EventId == eventId)
                 .Join(_context.Users,
@@ -209,18 +217,53 @@ namespace EventNestBE.Controllers
                           reg.CheckInTime,
                           StudentName = usr.FullName,
                           StudentMssv = usr.Mssv,
-                          StudentEmail = usr.Email
+                          StudentEmail = usr.Email,
+                          Faculty = usr.Faculty // Lấy thêm trường Khoa cho giao diện
                       });
 
-            var totalItems = await query.CountAsync();
+            // 2. Tính toán Thống kê Tổng quan (Dựa trên toàn bộ dữ liệu trước khi lọc)
+            var totalRegistrations = await query.CountAsync();
+            var checkedInCount = await query.CountAsync(x => x.IsCheckedIn);
+            var pendingCount = totalRegistrations - checkedInCount; // Sinh viên pending
+
+            // 3. Áp dụng các bộ lọc từ Front-End gửi lên
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x => x.StudentName.Contains(search) ||
+                                         x.StudentMssv.Contains(search) ||
+                                         x.StudentEmail.Contains(search));
+            }
+
+            if (!string.IsNullOrWhiteSpace(faculty))
+            {
+                query = query.Where(x => x.Faculty == faculty);
+            }
+
+            if (isCheckedIn.HasValue)
+            {
+                query = query.Where(x => x.IsCheckedIn == isCheckedIn.Value);
+            }
+
+            // 4. Xử lý Phân trang
+            var totalFilteredItems = await query.CountAsync();
             var data = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
+            // 5. Trả về cấu trúc JSON mới bao gồm cả Thống kê
             return Ok(new
             {
-                TotalItems = totalItems,
-                Page = page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
+                Summary = new
+                {
+                    Total = totalRegistrations,
+                    CheckedIn = checkedInCount,
+                    Pending = pendingCount
+                },
+                Pagination = new
+                {
+                    TotalItems = totalFilteredItems,
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalPages = (int)Math.Ceiling(totalFilteredItems / (double)pageSize)
+                },
                 Data = data
             });
         }

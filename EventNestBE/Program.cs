@@ -1,4 +1,6 @@
 using EventNestBE.Data;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
@@ -7,7 +9,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 // 
-builder.Services.AddScoped<EventNestBE.Services.IEmailService, EventNestBE.Services.EmailService>();
 // --- CẤU HÌNH BẢO MẬT JWT ---
 builder.Services.AddControllers();
 builder.Services.AddAuthorization();
@@ -26,6 +27,17 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
                 System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
+
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<EventReminderJob>();
+
+builder.Services.AddHangfire(config => config
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseMemoryStorage()); // Lưu tạm job trên RAM
+builder.Services.AddHangfireServer();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -71,6 +83,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseHangfireDashboard("/hangfire");
 
 app.UseHttpsRedirection();
 
@@ -83,5 +96,11 @@ app.UseAuthorization();
 app.UseStaticFiles(); // Thêm dòng này vào trước app.MapControllers();
 
 app.MapControllers();
+
+RecurringJob.AddOrUpdate<EventReminderJob>(
+    "daily-event-reminder",
+    job => job.ProcessDailyReminders(),
+    "0 8 * * *",
+    new RecurringJobOptions { TimeZone = TimeZoneInfo.Local });
 
 app.Run();

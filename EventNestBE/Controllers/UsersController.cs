@@ -24,17 +24,28 @@ namespace EventNestBE.Controllers
             _context = context;
             _configuration = configuration;
         }
-
         [HttpGet]
-        [Authorize(Roles = "Admin")] // Vá lỗi lộ dữ liệu: Chỉ Admin mới được xem
-        public async Task<IActionResult> GetUsers(int page = 1, int pageSize = 10, string? search = null)
+        [Authorize(Roles = "Admin")]
+        // THÊM string? role = null VÀO ĐÂY
+        public async Task<IActionResult> GetUsers(int page = 1, int pageSize = 10, string? search = null, string? faculty = null, string? role = null)
         {
             var query = _context.Users.AsQueryable();
 
-            // Tìm kiếm theo tên hoặc MSSV
             if (!string.IsNullOrWhiteSpace(search))
             {
-                query = query.Where(u => u.FullName.Contains(search) || u.Mssv.Contains(search));
+                query = query.Where(u => u.FullName.Contains(search) ||
+                                        (u.Mssv != null && u.Mssv.Contains(search)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(faculty))
+            {
+                query = query.Where(u => u.Faculty == faculty);
+            }
+
+            // THÊM ĐOẠN LỌC THEO ROLE NÀY VÀO
+            if (!string.IsNullOrWhiteSpace(role))
+            {
+                query = query.Where(u => u.Role == role);
             }
 
             var totalItems = await query.CountAsync();
@@ -42,13 +53,14 @@ namespace EventNestBE.Controllers
 
             return Ok(new
             {
-                TotalItems = totalItems,
-                Page = page,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
-                Data = users
+                totalItems = totalItems,
+                page = page,
+                pageSize = pageSize,
+                totalPages = (int)Math.Ceiling(totalItems / (double)pageSize),
+                data = users
             });
         }
+
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(User user)
         {
@@ -128,14 +140,15 @@ namespace EventNestBE.Controllers
         // 2. Cập nhật thông tin cá nhân (PUT: api/users/{id})
         // Có thẻ [Authorize] để bắt buộc phải đăng nhập mới được sửa thông tin
         // 2. Cập nhật thông tin cá nhân (PUT: api/users/{id})
+        // 2. Admin hoặc Sinh viên cập nhật thông tin (PUT: api/users/{id})
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateProfileDto updateDto)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto updateDto)
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            // LOGIC MỚI: Chỉ chặn nếu người dùng KHÔNG phải Admin VÀ KHÔNG phải chủ tài khoản
+            // Chỉ chặn nếu người dùng KHÔNG phải Admin VÀ KHÔNG phải chủ tài khoản
             if (userRole != "Admin" && (userIdClaim == null || int.Parse(userIdClaim) != id))
             {
                 return Forbid();
@@ -147,14 +160,11 @@ namespace EventNestBE.Controllers
                 return NotFound(new { message = "Không tìm thấy người dùng!" });
             }
 
+            // Cập nhật các thông tin từ Admin Modal gửi lên (Có MSSV)
             existingUser.FullName = updateDto.FullName;
             existingUser.Email = updateDto.Email;
-            existingUser.AvatarUrl = updateDto.AvatarUrl;
+            existingUser.Mssv = updateDto.Mssv; // Admin sửa được MSSV ở đây
             existingUser.Faculty = updateDto.Faculty;
-            existingUser.PhoneNumber = updateDto.PhoneNumber;
-            existingUser.DateOfBirth = updateDto.DateOfBirth;
-            existingUser.Cohort = updateDto.Cohort;
-            existingUser.Skills = updateDto.Skills;
 
             await _context.SaveChangesAsync();
             return Ok(new { message = "Cập nhật thành công!", data = existingUser });
@@ -196,7 +206,36 @@ namespace EventNestBE.Controllers
 
             return Ok(new { message = $"Đã cập nhật quyền thành {dto.NewRole} thành công!" });
         }
+        [HttpGet("dashboard-stats")]
+        [Authorize(Roles = "Admin")] // Chỉ cho phép Admin lấy dữ liệu thống kê này
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            // 1. Đếm tổng số sinh viên và admin trong bảng Users
+            var totalStudents = await _context.Users.CountAsync(u => u.Role == "Student");
+            var totalAdmins = await _context.Users.CountAsync(u => u.Role == "Admin");
 
+            // 2. Tính số lượng đăng ký mới trong tháng này 
+            // (Giả sử model User của anh có trường CreatedAt hoặc ngày tạo, nếu chưa có hãy tạm để 0 hoặc bổ sung sau)
+            var currentMonth = DateTime.Now.Month;
+            var currentYear = DateTime.Now.Year;
+
+            // Ví dụ nếu có trường CreatedAt:
+            // var activeThisMonth = await _context.Users.CountAsync(u => u.CreatedAt.Month == currentMonth && u.CreatedAt.Year == currentYear);
+            var activeThisMonth = 0; // Tạm thời để 0 nếu anh chưa lưu ngày đăng ký của User
+
+            // 3. Tính số lượng cảnh báo vắng mặt 
+            // (Logic này thường sẽ đếm từ một bảng điểm danh hoặc bảng lịch sử sự kiện khác, tạm thời trả về 0)
+            var absenceWarnings = 0;
+
+            // Trả về đúng các key mà React Frontend đang đợi (camelCase)
+            return Ok(new
+            {
+                totalStudents = totalStudents,
+                totalAdmins = totalAdmins,
+                activeThisMonth = activeThisMonth,
+                absenceWarnings = absenceWarnings
+            });
+        }
         // Tạo thêm Class DTO nhỏ này ở cuối file UsersController.cs
         public class ChangeRoleDto
         {
