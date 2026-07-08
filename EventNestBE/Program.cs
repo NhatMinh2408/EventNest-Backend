@@ -3,15 +3,14 @@ using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
-// 
-// --- CẤU HÌNH BẢO MẬT JWT ---
-builder.Services.AddControllers();
-builder.Services.AddAuthorization();
+
+// --- Auth & JWT ---
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -27,80 +26,82 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
                 System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
         };
     });
+builder.Services.AddAuthorization();
 
+// --- Services & Hangfire ---
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<EventReminderJob>();
-
 builder.Services.AddHangfire(config => config
     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
-    .UseMemoryStorage()); // Lưu tạm job trên RAM
+    .UseMemoryStorage());
 builder.Services.AddHangfireServer();
 
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// --- Swagger Fix ---
 builder.Services.AddSwaggerGen(options =>
 {
-    // Định nghĩa cách Swagger sẽ nhận diện Token
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme 
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Nhập Token vào đây theo định dạng: Bearer <token>"
+        Description = "Nhập Token: Bearer <token>"
     });
-
-    // Yêu cầu Swagger áp dụng bảo mật này cho tất cả API
+    // ĐÃ SỬA: Dùng SecurityScheme thay vì Key
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
             new OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
             },
             new string[] {}
         }
     });
 });
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        policy => policy.AllowAnyOrigin() // Cho phép React ở bất kỳ port nào cũng gọi được
-                        .AllowAnyMethod() // Cho phép GET, POST, PUT, DELETE
-                        .AllowAnyHeader());
+    options.AddPolicy("AllowAll", policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
-var app = builder.Build(); // <-- Tất cả cấu hình ở trên phải nằm TRÊN dòng này
 
-// Cấu hình hiển thị trang giao diện Swagger để test API
+var app = builder.Build();
+
+// --- Pipeline ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseHangfireDashboard("/hangfire");
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
-
 app.UseAuthentication();
-
 app.UseAuthorization();
-
-app.UseStaticFiles(); // Thêm dòng này vào trước app.MapControllers();
-
+app.UseHangfireDashboard("/hangfire");
+app.UseStaticFiles();
 app.MapControllers();
+
+// --- Jobs (Sửa múi giờ) ---
+// Dùng ID múi giờ chuẩn để tránh lỗi trên các môi trường khác nhau
+var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
 RecurringJob.AddOrUpdate<EventReminderJob>(
     "daily-event-reminder",
     job => job.ProcessDailyReminders(),
     "0 8 * * *",
-    new RecurringJobOptions { TimeZone = TimeZoneInfo.Local });
+    new RecurringJobOptions { TimeZone = vnTimeZone });
+
+RecurringJob.AddOrUpdate<EventReminderJob>(
+    "hourly-event-reminder",
+    job => job.ProcessHourlyReminders(),
+    "*/15 * * * *",
+    new RecurringJobOptions { TimeZone = vnTimeZone });
 
 app.Run();

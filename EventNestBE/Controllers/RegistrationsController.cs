@@ -26,20 +26,18 @@ namespace EventNestBE.Controllers
         [HttpPost]
         public async Task<ActionResult<Registration>> RegisterEvent(RegisterEventDto dto)
         {
-            // 1. Kiểm tra tính hợp lệ của DTO (nếu có validation)
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // 2. Tìm sự kiện xem có tồn tại không
             var targetEvent = await _context.Events.FindAsync(dto.EventId);
             if (targetEvent == null)
             {
                 return NotFound(new { message = "Không tìm thấy sự kiện này!" });
             }
 
-            // --- LOGIC MỚI: KIỂM TRA THỜI GIAN ĐĂNG KÝ ---
+            // --- ĐỔI THÀNH UTCNOW ĐỂ ĐỒNG BỘ VỚI FRONTEND ---
             var currentTime = DateTime.UtcNow;
 
             if (currentTime < targetEvent.RegistrationStartTime)
@@ -53,7 +51,6 @@ namespace EventNestBE.Controllers
             }
             // ---------------------------------------------
 
-            // 3. Đếm và kiểm tra số lượng MaxAttendees như cũ...
             var currentAttendeesCount = await _context.Registrations
                 .CountAsync(r => r.EventId == dto.EventId);
 
@@ -62,7 +59,6 @@ namespace EventNestBE.Controllers
                 return BadRequest(new { message = "Rất tiếc! Sự kiện này đã đạt số lượng tối đa." });
             }
 
-            // 4. Kiểm tra trùng lặp dựa trên dữ liệu từ DTO
             var alreadyRegistered = await _context.Registrations
                 .AnyAsync(r => r.EventId == dto.EventId && r.StudentId == dto.StudentId);
 
@@ -71,12 +67,12 @@ namespace EventNestBE.Controllers
                 return BadRequest(new { message = "Sinh viên này đã đăng ký sự kiện này rồi!" });
             }
 
-            // 5. Chuyển đổi dữ liệu từ DTO sang Entity chuẩn để lưu Database
             var reg = new Registration
             {
                 EventId = dto.EventId,
                 StudentId = dto.StudentId,
-                RegisteredAt = DateTime.UtcNow // Gán ngày đăng ký bằng giờ hiện tại
+                // Sử dụng UtcNow để nhất quán toàn hệ thống
+                RegisteredAt = DateTime.UtcNow
             };
 
             _context.Registrations.Add(reg);
@@ -84,7 +80,6 @@ namespace EventNestBE.Controllers
 
             await _context.SaveChangesAsync();
 
-            // 6. Logic gửi Email của anh giữ nguyên...
             var student = await _context.Users.FindAsync(reg.StudentId);
             if (student != null && !string.IsNullOrEmpty(student.Email))
             {

@@ -1,4 +1,7 @@
-﻿namespace EventNestBE.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace EventNestBE.Models
 {
     public class Event
     {
@@ -6,7 +9,6 @@
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
 
-        // --- Đã có Address & Location ---
         public string Address { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
 
@@ -24,7 +26,9 @@
         public string BannerUrl { get; set; } = string.Empty;
         public string Status { get; set; } = "Draft";
         public int OrganizerId { get; set; }
-        // Thêm Navigation Property này vào class Event.cs
+
+        // [QUAN TRỌNG]: Thêm [JsonIgnore] để khi API trả JSON không bị lặp vô tận
+        [JsonIgnore]
         public virtual ICollection<Registration>? Registrations { get; set; }
     }
 }
