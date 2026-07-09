@@ -3,47 +3,16 @@
   "WorkspaceRootPath": "D:\\EventNest\\EventNestBE\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{4F4BAE31-1FD8-2A17-8522-ADC24202924D}|..\\EventNestFE\\EventNestFE\\eventnestfe.esproj|d:\\eventnest\\eventnestfe\\eventnestfe\\src\\page\\createeventadmin\\createeventadmin.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\controllers\\eventscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\controllers\\eventscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\controllers\\registrationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\controllers\\registrationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4F4BAE31-1FD8-2A17-8522-ADC24202924D}|..\\EventNestFE\\EventNestFE\\eventnestfe.esproj|d:\\eventnest\\eventnestfe\\eventnestfe\\src\\page\\eventdetailpage\\eventdetailpage.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\models\\registration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\models\\registration.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\services\\eventreminderjob.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\services\\eventreminderjob.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4F4BAE31-1FD8-2A17-8522-ADC24202924D}|..\\EventNestFE\\EventNestFE\\eventnestfe.esproj|d:\\eventnest\\eventnestfe\\eventnestfe\\src\\page\\editeventadmin\\editeventadmin.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\models\\event.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\models\\event.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4F4BAE31-1FD8-2A17-8522-ADC24202924D}|..\\EventNestFE\\EventNestFE\\eventnestfe.esproj|d:\\eventnest\\eventnestfe\\eventnestfe\\src\\components\\enventregister\\enventregister.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4F4BAE31-1FD8-2A17-8522-ADC24202924D}|..\\EventNestFE\\EventNestFE\\eventnestfe.esproj|d:\\eventnest\\eventnestfe\\eventnestfe\\src\\components\\myregistrations\\myregistrations.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|d:\\eventnest\\eventnestbe\\eventnestbe\\eventnestbe.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{C40EEB99-4900-9CB5-0166-DBD1FCF1882E}|EventNestBE\\EventNestBE.csproj|solutionrelative:eventnestbe\\eventnestbe.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     }
   ],
   "DocumentGroupContainers": [
@@ -58,157 +27,40 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "CreateEventAdmin.jsx",
-              "DocumentMoniker": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\page\\CreateEventAdmin\\CreateEventAdmin.jsx",
-              "RelativeDocumentMoniker": "..\\EventNestFE\\eventnestfe\\src\\page\\CreateEventAdmin\\CreateEventAdmin.jsx",
-              "ToolTip": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\page\\CreateEventAdmin\\CreateEventAdmin.jsx",
-              "RelativeToolTip": "..\\EventNestFE\\eventnestfe\\src\\page\\CreateEventAdmin\\CreateEventAdmin.jsx",
-              "ViewState": "AgIAAEYBAAAAAAAAAAAUwFQBAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2026-07-08T13:45:54.98Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "EventDetailPage.jsx",
-              "DocumentMoniker": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\page\\EventDetailPage\\EventDetailPage.jsx",
-              "RelativeDocumentMoniker": "..\\EventNestFE\\eventnestfe\\src\\page\\EventDetailPage\\EventDetailPage.jsx",
-              "ToolTip": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\page\\EventDetailPage\\EventDetailPage.jsx",
-              "RelativeToolTip": "..\\EventNestFE\\eventnestfe\\src\\page\\EventDetailPage\\EventDetailPage.jsx",
-              "ViewState": "AgIAAPcAAAAAAAAAAAAQwBABAAAfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2026-07-08T13:37:48.672Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\appsettings.json",
-              "RelativeDocumentMoniker": "EventNestBE\\appsettings.json",
-              "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\appsettings.json",
-              "RelativeToolTip": "EventNestBE\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-07-08T13:19:47.86Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "EventsController.cs",
-              "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\Controllers\\EventsController.cs",
-              "RelativeDocumentMoniker": "EventNestBE\\Controllers\\EventsController.cs",
-              "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\Controllers\\EventsController.cs",
-              "RelativeToolTip": "EventNestBE\\Controllers\\EventsController.cs",
-              "ViewState": "AgIAAKwAAAAAAAAAAAAwwAYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-08T13:16:31.847Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "Event.cs",
-              "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\Models\\Event.cs",
-              "RelativeDocumentMoniker": "EventNestBE\\Models\\Event.cs",
-              "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\Models\\Event.cs",
-              "RelativeToolTip": "EventNestBE\\Models\\Event.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-08T13:10:59.903Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "EditEventAdmin.jsx",
-              "DocumentMoniker": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\page\\EditEventAdmin\\EditEventAdmin.jsx",
-              "RelativeDocumentMoniker": "..\\EventNestFE\\eventnestfe\\src\\page\\EditEventAdmin\\EditEventAdmin.jsx",
-              "ToolTip": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\page\\EditEventAdmin\\EditEventAdmin.jsx",
-              "RelativeToolTip": "..\\EventNestFE\\eventnestfe\\src\\page\\EditEventAdmin\\EditEventAdmin.jsx",
-              "ViewState": "AgIAAGQAAAAAAAAAAAAvwGsAAAAIAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2026-07-08T12:46:11.935Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "EnventRegister.jsx",
-              "DocumentMoniker": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\components\\EnventRegister\\EnventRegister.jsx",
-              "RelativeDocumentMoniker": "..\\EventNestFE\\eventnestfe\\src\\components\\EnventRegister\\EnventRegister.jsx",
-              "ToolTip": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\components\\EnventRegister\\EnventRegister.jsx",
-              "RelativeToolTip": "..\\EventNestFE\\eventnestfe\\src\\components\\EnventRegister\\EnventRegister.jsx",
-              "ViewState": "AgIAAHkAAAAAAAAAAAAYwI8AAAAeAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2026-07-08T11:55:08.494Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "MyRegistrations.jsx",
-              "DocumentMoniker": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\components\\MyRegistrations\\MyRegistrations.jsx",
-              "RelativeDocumentMoniker": "..\\EventNestFE\\eventnestfe\\src\\components\\MyRegistrations\\MyRegistrations.jsx",
-              "ToolTip": "D:\\EventNest\\EventNestFE\\eventnestfe\\src\\components\\MyRegistrations\\MyRegistrations.jsx",
-              "RelativeToolTip": "..\\EventNestFE\\eventnestfe\\src\\components\\MyRegistrations\\MyRegistrations.jsx",
-              "ViewState": "AgIAAF8AAAAAAAAAAAAAwGMAAAA3AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2026-07-08T11:54:58.732Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "RegistrationsController.cs",
-              "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\Controllers\\RegistrationsController.cs",
-              "RelativeDocumentMoniker": "EventNestBE\\Controllers\\RegistrationsController.cs",
-              "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\Controllers\\RegistrationsController.cs",
-              "RelativeToolTip": "EventNestBE\\Controllers\\RegistrationsController.cs",
-              "ViewState": "AgIAADkBAAAAAAAAAAAUwFIBAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-08T11:46:46.831Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\Program.cs",
               "RelativeDocumentMoniker": "EventNestBE\\Program.cs",
               "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\Program.cs",
               "RelativeToolTip": "EventNestBE\\Program.cs",
-              "ViewState": "AgIAAFEAAAAAAAAAAAAUwGoAAAAKAAAAAAAAAA==",
+              "ViewState": "AgIAAGQAAAAAAAAAAAAgwGsAAAAnAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-08T11:34:01.283Z",
+              "WhenOpened": "2026-07-09T13:59:17.166Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "Registration.cs",
-              "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\Models\\Registration.cs",
-              "RelativeDocumentMoniker": "EventNestBE\\Models\\Registration.cs",
-              "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\Models\\Registration.cs",
-              "RelativeToolTip": "EventNestBE\\Models\\Registration.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAABQAAAAwAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-08T11:28:41.639Z",
+              "DocumentIndex": 1,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\Dockerfile",
+              "RelativeDocumentMoniker": "EventNestBE\\Dockerfile",
+              "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\Dockerfile",
+              "RelativeToolTip": "EventNestBE\\Dockerfile",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-07-09T13:57:51.36Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "EventReminderJob.cs",
-              "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\Services\\EventReminderJob.cs",
-              "RelativeDocumentMoniker": "EventNestBE\\Services\\EventReminderJob.cs",
-              "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\Services\\EventReminderJob.cs",
-              "RelativeToolTip": "EventNestBE\\Services\\EventReminderJob.cs",
-              "ViewState": "AgIAAD0AAAAAAAAAAAAowD4AAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-07-08T11:22:11.516Z",
+              "DocumentIndex": 2,
+              "Title": "EventNestBE",
+              "DocumentMoniker": "D:\\EventNest\\EventNestBE\\EventNestBE\\EventNestBE.csproj",
+              "RelativeDocumentMoniker": "EventNestBE\\EventNestBE.csproj",
+              "ToolTip": "D:\\EventNest\\EventNestBE\\EventNestBE\\EventNestBE.csproj",
+              "RelativeToolTip": "EventNestBE\\EventNestBE.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABsAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-07-09T13:53:29.688Z",
               "EditorCaption": ""
             }
           ]
