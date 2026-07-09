@@ -9,16 +9,18 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# ĐÃ SỬA: Thay vì chỉ định cứng tên thư mục EventNestBE, 
-# Chúng ta copy toàn bộ code vào và để dotnet tự nhận diện file .csproj ngon lành
+# Copy toàn bộ code vào
 COPY . .
-RUN dotnet restore
-RUN dotnet build -c $BUILD_CONFIGURATION -o /app/build
+
+# 🎯 ĐÃ SỬA: Chỉ định đích danh đường dẫn tới file Backend .csproj 
+# Để ngăn nó tự động tìm và chạy nhầm sang file Frontend (.esproj)
+RUN dotnet restore "EventNestBE/EventNestBE.csproj"
+RUN dotnet build "EventNestBE/EventNestBE.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Stage 3: Publish
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "EventNestBE/EventNestBE.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Stage 4: Final Image
 FROM base AS final
