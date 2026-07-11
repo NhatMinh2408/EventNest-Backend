@@ -7,8 +7,9 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
+// ĐÃ SỬA: Dùng UseNpgsql cho PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 // --- Auth & JWT ---
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
@@ -75,8 +76,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // --- Pipeline Config ---
-// ĐÃ SỬA: Đưa Swagger ra ngoài điều kiện IsDevelopment() 
-// Để khi lên Railway anh vẫn truy cập được trang giao diện API nhằm kiểm tra kết nối dễ dàng hơn.
+// ĐỂ RA NGOÀI IsDevelopment() ĐỂ XEM ĐƯỢC SWAGGER TRÊN RAILWAY
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -84,25 +84,22 @@ app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseHangfireDashboard("/hangfire");
 
+app.UseHangfireDashboard("/hangfire");
 app.UseStaticFiles();
 app.MapControllers();
 
-// --- Hangfire Jobs (ĐÃ SỬA: Tương thích cả Windows và Linux) ---
+// --- Hangfire Jobs ---
 TimeZoneInfo vnTimeZone;
 try
 {
-    // Thử lấy múi giờ theo định dạng của hệ điều hành Windows (Chạy ở máy Local)
     vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 }
 catch (TimeZoneNotFoundException)
 {
-    // Nếu không tìm thấy (Khi chạy trên Docker Linux của Railway), sẽ tự động đổi sang định dạng Linux
     vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
 }
 
-// Đăng ký các tiến trình chạy ngầm với múi giờ đã cấu hình động
 RecurringJob.AddOrUpdate<EventReminderJob>(
     "daily-event-reminder",
     job => job.ProcessDailyReminders(),
