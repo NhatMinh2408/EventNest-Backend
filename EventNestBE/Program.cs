@@ -1,4 +1,5 @@
 using EventNestBE.Data;
+using EventNestBE.Models;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.EntityFrameworkCore;
@@ -79,6 +80,24 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     // Lệnh này tương đương với dotnet ef database update
     dbContext.Database.Migrate();
+    var adminExists = await dbContext.Users.AnyAsync(u => u.Role == "Admin");
+    if (!adminExists)
+    {
+        var adminUser = new User
+        {
+            Username = "admin",
+            // Lưu ý: Phải hash mật khẩu bằng chính thuật toán anh đang dùng trong hệ thống
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+            FullName = "Administrator",
+            Email = "admin@eventnest.com",
+            Role = "Admin",
+            Mssv = "ADMIN001",
+            Faculty = "System",
+            Cohort = "N/A"
+        };
+        dbContext.Users.Add(adminUser);
+        await dbContext.SaveChangesAsync();
+    }
 }
 
 // --- Pipeline Config ---
