@@ -74,6 +74,12 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    // Lệnh này tương đương với dotnet ef database update
+    dbContext.Database.Migrate();
+}
 
 // --- Pipeline Config ---
 // ĐỂ RA NGOÀI IsDevelopment() ĐỂ XEM ĐƯỢC SWAGGER TRÊN RAILWAY
