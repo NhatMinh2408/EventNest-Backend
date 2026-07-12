@@ -19,17 +19,14 @@ namespace EventNestBE.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // 1. Định nghĩa quy tắc chuyển đổi DateTime sang UTC
             var dateTimeConverter = new ValueConverter<DateTime, DateTime>(
                 v => v.Kind == DateTimeKind.Utc ? v : v.ToUniversalTime(),
                 v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
-            // Định nghĩa quy tắc cho DateTime? (có thể null)
             var nullableDateTimeConverter = new ValueConverter<DateTime?, DateTime?>(
                 v => !v.HasValue ? v : (v.Value.Kind == DateTimeKind.Utc ? v : v.Value.ToUniversalTime()),
                 v => !v.HasValue ? v : DateTime.SpecifyKind(v.Value, DateTimeKind.Utc));
 
-            // 2. Tự động áp dụng quy tắc này cho toàn bộ các cột DateTime trong Database
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
                 foreach (var property in entityType.GetProperties())

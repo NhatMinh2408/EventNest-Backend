@@ -16,9 +16,8 @@ namespace EventNestBE.Controllers
     public class UsersController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration; // Thêm biến để đọc Key trong appsettings.json
+        private readonly IConfiguration _configuration;
 
-        // Cập nhật lại Hàm khởi tạo
         public UsersController(ApplicationDbContext context, IConfiguration configuration)
         {
             _context = context;
@@ -26,7 +25,6 @@ namespace EventNestBE.Controllers
         }
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        // THÊM string? role = null VÀO ĐÂY
         public async Task<IActionResult> GetUsers(int page = 1, int pageSize = 10, string? search = null, string? faculty = null, string? role = null)
         {
             var query = _context.Users.AsQueryable();
@@ -42,7 +40,6 @@ namespace EventNestBE.Controllers
                 query = query.Where(u => u.Faculty == faculty);
             }
 
-            // THÊM ĐOẠN LỌC THEO ROLE NÀY VÀO
             if (!string.IsNullOrWhiteSpace(role))
             {
                 query = query.Where(u => u.Role == role);
@@ -64,7 +61,6 @@ namespace EventNestBE.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(User user)
         {
-            // Kiểm tra xem Username HOẶC Mssv đã tồn tại chưa
             var userExists = await _context.Users.AnyAsync(u => u.Username == user.Username);
             if (userExists) return BadRequest("Tài khoản (Username) này đã tồn tại!");
 
@@ -78,7 +74,6 @@ namespace EventNestBE.Controllers
             return Ok(user);
         }
 
-        // --- CẬP NHẬT HÀM LOGIN ĐỂ TRẢ VỀ TOKEN ---
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserLoginModel loginInfo)
         {
@@ -91,19 +86,16 @@ namespace EventNestBE.Controllers
                 return BadRequest("Tài khoản hoặc mật khẩu không chính xác!");
             }
 
-            // 1. Tạo các thông tin sẽ giấu vào trong chiếc thẻ JWT (Claims)
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role) // Lưu quyền (Student/Admin) vào thẻ
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
-            // 2. Lấy chìa khóa bí mật từ file appsettings.json
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            // 3. Tiến hành in thẻ JWT (có thời hạn 1 ngày)
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
@@ -112,18 +104,16 @@ namespace EventNestBE.Controllers
                 signingCredentials: creds
             );
 
-            // 4. Chuyển thẻ thành chuỗi chữ và trả về cho người dùng
             var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
 
             return Ok(new
             {
                 message = "Đăng nhập thành công!",
-                token = jwtToken, // Trả token về đây
+                token = jwtToken,
                 role = user.Role,
                 id = user.Id,
             });
         }
-        // 1. Xem hồ sơ của MỘT người dùng (GET: api/users/{id})
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
@@ -137,10 +127,6 @@ namespace EventNestBE.Controllers
             return Ok(user);
         }
 
-        // 2. Cập nhật thông tin cá nhân (PUT: api/users/{id})
-        // Có thẻ [Authorize] để bắt buộc phải đăng nhập mới được sửa thông tin
-        // 2. Cập nhật thông tin cá nhân (PUT: api/users/{id})
-        // 2. Admin hoặc Sinh viên cập nhật thông tin (PUT: api/users/{id})
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto updateDto)
@@ -148,7 +134,6 @@ namespace EventNestBE.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            // Chỉ chặn nếu người dùng KHÔNG phải Admin VÀ KHÔNG phải chủ tài khoản
             if (userRole != "Admin" && (userIdClaim == null || int.Parse(userIdClaim) != id))
             {
                 return Forbid();
@@ -160,18 +145,15 @@ namespace EventNestBE.Controllers
                 return NotFound(new { message = "Không tìm thấy người dùng!" });
             }
 
-            // Cập nhật các thông tin từ Admin Modal gửi lên (Có MSSV)
             existingUser.FullName = updateDto.FullName;
             existingUser.Email = updateDto.Email;
-            existingUser.Mssv = updateDto.Mssv; // Admin sửa được MSSV ở đây
+            existingUser.Mssv = updateDto.Mssv;
             existingUser.Faculty = updateDto.Faculty;
 
             await _context.SaveChangesAsync();
             return Ok(new { message = "Cập nhật thành công!", data = existingUser });
         }
 
-        // 3. Xóa người dùng (DELETE: api/users/{id})
-        // ĐẶC BIỆT: Chỉ có tài khoản mang quyền "Admin" mới gọi được hàm này
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
@@ -187,7 +169,6 @@ namespace EventNestBE.Controllers
 
             return Ok(new { message = "Đã xóa người dùng thành công!" });
         }
-        // 3. Thay đổi quyền truy cập (Role) (Chỉ Admin mới được làm)
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/role")]
         public async Task<IActionResult> ChangeRole(int id, [FromBody] ChangeRoleDto dto)
@@ -195,7 +176,6 @@ namespace EventNestBE.Controllers
             var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound(new { message = "Không tìm thấy người dùng!" });
 
-            // Chỉ cho phép 2 quyền cơ bản để tránh lỗi gõ sai
             if (dto.NewRole != "Admin" && dto.NewRole != "Student")
             {
                 return BadRequest(new { message = "Quyền không hợp lệ! (Chỉ nhận 'Admin' hoặc 'Student')" });
@@ -207,15 +187,12 @@ namespace EventNestBE.Controllers
             return Ok(new { message = $"Đã cập nhật quyền thành {dto.NewRole} thành công!" });
         }
         [HttpGet("dashboard-stats")]
-        [Authorize(Roles = "Admin")] // Chỉ cho phép Admin lấy dữ liệu thống kê này
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetDashboardStats()
         {
-            // 1. Đếm tổng số sinh viên và admin trong bảng Users
             var totalStudents = await _context.Users.CountAsync(u => u.Role == "Student");
             var totalAdmins = await _context.Users.CountAsync(u => u.Role == "Admin");
 
-            // 2. Tính số lượng đăng ký mới trong tháng này 
-            // (Giả sử model User của anh có trường CreatedAt hoặc ngày tạo, nếu chưa có hãy tạm để 0 hoặc bổ sung sau)
             var currentMonth = DateTime.Now.Month;
             var currentYear = DateTime.Now.Year;
 

@@ -25,7 +25,7 @@ namespace EventNestBE.Controllers
             var currentTime = DateTime.UtcNow;
 
             var ongoingEvents = await _context.Events
-                .AsNoTracking() // Tối ưu: Báo cho EF biết chỉ đọc, không cần track thay đổi bộ nhớ
+                .AsNoTracking()
                 .Where(e => e.Status == "Published" && e.StartTime <= currentTime && e.EndTime >= currentTime)
                 .OrderBy(e => e.EndTime)
                 .ToListAsync();
@@ -33,11 +33,9 @@ namespace EventNestBE.Controllers
             return Ok(ongoingEvents);
         }
 
-        // --- 1. Lấy danh sách toàn bộ sự kiện (Có phân trang, Search, Lọc) ---
         [HttpGet]
         public async Task<IActionResult> GetEvents(int page = 1, int pageSize = 10, string? search = null)
         {
-            // Chống crash nếu Frontend gửi dữ liệu bậy
             if (page < 1) page = 1;
             if (pageSize < 1) pageSize = 10;
 
@@ -50,7 +48,6 @@ namespace EventNestBE.Controllers
                 query = query.Where(e => e.Status == "Published");
             }
 
-            // Lọc theo Search (Chuyển ToLower để tìm kiếm không phân biệt hoa thường một cách tương đối)
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var lowerSearch = search.ToLower();
@@ -61,7 +58,7 @@ namespace EventNestBE.Controllers
             var totalItems = await query.CountAsync();
 
             var events = await query
-                .OrderByDescending(e => e.StartTime) // Thường người dùng muốn thấy event mới nhất lên đầu thay vì lấy bừa
+                .OrderByDescending(e => e.StartTime)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -89,11 +86,10 @@ namespace EventNestBE.Controllers
                 return NotFound(new { message = "Không tìm thấy sự kiện này!" });
             }
 
-            // Bịt lỗ hổng bảo mật: Không cho User thường dùng ID trực tiếp truy cập vào sự kiện đang Draft
             var userRole = User.FindFirstValue(ClaimTypes.Role);
             if (userRole != "Admin" && myEvent.Status != "Published")
             {
-                return Forbid(); // Trả về 403 hoặc có thể dùng NotFound để ẩn hoàn toàn sự tồn tại
+                return Forbid();
             }
 
             return Ok(myEvent);
@@ -104,13 +100,11 @@ namespace EventNestBE.Controllers
         [HttpPost]
         public async Task<ActionResult<Event>> CreateEvent([FromBody] Event myEvent)
         {
-            // Ép cứng để tránh client truyền láo số người tham gia ban đầu
             myEvent.CurrentAttendees = 0;
 
             _context.Events.Add(myEvent);
             await _context.SaveChangesAsync();
 
-            // Chuẩn RESTful: POST xong trả về code 201 (Created) kèm đường dẫn tới tài nguyên vừa tạo
             return CreatedAtAction(nameof(GetEvent), new { id = myEvent.Id }, myEvent);
         }
 
@@ -130,7 +124,6 @@ namespace EventNestBE.Controllers
                 return NotFound(new { message = "Không tìm thấy sự kiện cần sửa!" });
             }
 
-            // Cập nhật an toàn (Không cập nhật CurrentAttendees, OrganizerId)
             existingEvent.Title = updatedEvent.Title;
             existingEvent.Description = updatedEvent.Description;
             existingEvent.Location = updatedEvent.Location;
@@ -143,7 +136,7 @@ namespace EventNestBE.Controllers
             existingEvent.BannerUrl = updatedEvent.BannerUrl;
             existingEvent.Status = updatedEvent.Status;
             existingEvent.TrainingPoints = updatedEvent.TrainingPoints;
-            existingEvent.PenaltyPoints = updatedEvent.PenaltyPoints; // Bản cũ anh đang sót dòng này
+            existingEvent.PenaltyPoints = updatedEvent.PenaltyPoints;
 
             try
             {
@@ -162,7 +155,6 @@ namespace EventNestBE.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteEvent(int id)
         {
-            // Phải include Registrations để check trước khi xóa
             var myEvent = await _context.Events
                 .Include(e => e.Registrations)
                 .FirstOrDefaultAsync(e => e.Id == id);
@@ -172,7 +164,6 @@ namespace EventNestBE.Controllers
                 return NotFound(new { message = "Không tìm thấy sự kiện cần xóa!" });
             }
 
-            // Bịt lỗi văng Database Exception do Foreign Key
             if (myEvent.Registrations != null && myEvent.Registrations.Any())
             {
                 return BadRequest(new

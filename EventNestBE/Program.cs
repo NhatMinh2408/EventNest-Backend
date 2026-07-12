@@ -8,7 +8,6 @@ using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// ĐÃ SỬA: Dùng UseNpgsql cho PostgreSQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
@@ -78,7 +77,6 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    // Lệnh này tương đương với dotnet ef database update
     dbContext.Database.Migrate();
     var adminExists = await dbContext.Users.AnyAsync(u => u.Role == "Admin");
     if (!adminExists)
@@ -101,7 +99,6 @@ using (var scope = app.Services.CreateScope())
 }
 
 // --- Pipeline Config ---
-// ĐỂ RA NGOÀI IsDevelopment() ĐỂ XEM ĐƯỢC SWAGGER TRÊN RAILWAY
 app.UseSwagger();
 app.UseSwaggerUI();
 

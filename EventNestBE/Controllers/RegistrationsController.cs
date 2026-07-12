@@ -22,7 +22,6 @@ namespace EventNestBE.Controllers
             _emailService = emailService;
         }
 
-        // 1. API Sinh viên bấm đăng ký tham gia sự kiện (POST: api/registrations)
         [HttpPost]
         public async Task<ActionResult<Registration>> RegisterEvent(RegisterEventDto dto)
         {
@@ -37,7 +36,6 @@ namespace EventNestBE.Controllers
                 return NotFound(new { message = "Không tìm thấy sự kiện này!" });
             }
 
-            // --- ĐỔI THÀNH UTCNOW ĐỂ ĐỒNG BỘ VỚI FRONTEND ---
             var currentTime = DateTime.UtcNow;
 
             if (currentTime < targetEvent.RegistrationStartTime)
@@ -49,7 +47,6 @@ namespace EventNestBE.Controllers
             {
                 return BadRequest(new { message = "Đã hết hạn đăng ký tham gia sự kiện này!" });
             }
-            // ---------------------------------------------
 
             var currentAttendeesCount = await _context.Registrations
                 .CountAsync(r => r.EventId == dto.EventId);
@@ -71,7 +68,6 @@ namespace EventNestBE.Controllers
             {
                 EventId = dto.EventId,
                 StudentId = dto.StudentId,
-                // Sử dụng UtcNow để nhất quán toàn hệ thống
                 RegisteredAt = DateTime.UtcNow
             };
 
@@ -98,7 +94,6 @@ namespace EventNestBE.Controllers
         [HttpPut("checkin")]
         public async Task<IActionResult> CheckIn([FromBody] CheckInDto dto)
         {
-            // Tìm đơn đăng ký dựa trên body truyền lên
             var registration = await _context.Registrations
                 .FirstOrDefaultAsync(r => r.EventId == dto.EventId && r.StudentId == dto.StudentId);
 
@@ -123,11 +118,9 @@ namespace EventNestBE.Controllers
                 return BadRequest(new { message = "Sự kiện này đã kết thúc, bạn không thể điểm danh được nữa!" });
             }
 
-            // Tiến hành check-in
             registration.IsCheckedIn = true;
             registration.CheckInTime = DateTime.UtcNow;
 
-            // Cộng điểm rèn luyện
             var student = await _context.Users.FindAsync(dto.StudentId);
             if (student != null)
             {
@@ -165,10 +158,8 @@ namespace EventNestBE.Controllers
                           reg.CheckInTime
                       }).ToListAsync();
 
-            // Sử dụng StringBuilder để tạo nội dung file CSV
             var builder = new StringBuilder();
 
-            // Dòng tiêu đề
             builder.AppendLine("MSSV,Ho Ten,Email,Ngay Dang Ky,Trang Thai Check-in, Thoi Gian Check-in");
 
             foreach (var reg in registrations)
@@ -177,16 +168,11 @@ namespace EventNestBE.Controllers
                 var checkInTime = reg.CheckInTime?.ToString("dd/MM/yyyy HH:mm:ss") ?? "";
                 var regTime = reg.RegisteredAt.ToString("dd/MM/yyyy HH:mm:ss");
 
-                // Thêm từng dòng dữ liệu
                 builder.AppendLine($"{reg.Mssv},{reg.FullName},{reg.Email},{regTime},{checkInStatus},{checkInTime}");
             }
 
-            // Trả về file định dạng CSV để trình duyệt tự động tải xuống
             return File(Encoding.UTF8.GetBytes(builder.ToString()), "text/csv", $"DanhSachSinhVien_SuKien_{eventId}.csv");
         }
-        // 3. API Lấy danh sách tất cả sinh viên đăng ký MỘT sự kiện
-        // 1. API Lấy danh sách đăng ký MỘT sự kiện (Có phân trang & lấy kèm tên, mssv)
-        // 1. API Lấy danh sách đăng ký MỘT sự kiện (Đã cập nhật Search, Filter & Thống kê)
         [HttpGet("event/{eventId}")]
         public async Task<IActionResult> GetRegistrationsByEvent(
             int eventId,
@@ -196,7 +182,6 @@ namespace EventNestBE.Controllers
             int page = 1,
             int pageSize = 10)
         {
-            // 1. Khởi tạo Query kết hợp bảng
             var query = _context.Registrations
                 .Where(r => r.EventId == eventId)
                 .Join(_context.Users,
@@ -213,15 +198,13 @@ namespace EventNestBE.Controllers
                           StudentName = usr.FullName,
                           StudentMssv = usr.Mssv,
                           StudentEmail = usr.Email,
-                          Faculty = usr.Faculty // Lấy thêm trường Khoa cho giao diện
+                          Faculty = usr.Faculty
                       });
 
-            // 2. Tính toán Thống kê Tổng quan (Dựa trên toàn bộ dữ liệu trước khi lọc)
             var totalRegistrations = await query.CountAsync();
             var checkedInCount = await query.CountAsync(x => x.IsCheckedIn);
-            var pendingCount = totalRegistrations - checkedInCount; // Sinh viên pending
+            var pendingCount = totalRegistrations - checkedInCount;
 
-            // 3. Áp dụng các bộ lọc từ Front-End gửi lên
             if (!string.IsNullOrWhiteSpace(search))
             {
                 query = query.Where(x => x.StudentName.Contains(search) ||
@@ -239,11 +222,9 @@ namespace EventNestBE.Controllers
                 query = query.Where(x => x.IsCheckedIn == isCheckedIn.Value);
             }
 
-            // 4. Xử lý Phân trang
             var totalFilteredItems = await query.CountAsync();
             var data = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
 
-            // 5. Trả về cấu trúc JSON mới bao gồm cả Thống kê
             return Ok(new
             {
                 Summary = new
@@ -263,11 +244,9 @@ namespace EventNestBE.Controllers
             });
         }
 
-        // 4. API Lấy lịch sử sự kiện đã đăng ký của MỘT sinh viên (ĐÃ ĐƯỢC TỐI ƯU)
         [HttpGet("student/{studentId}")]
         public async Task<IActionResult> GetRegistrationsByStudent(int studentId)
         {
-            // Sử dụng Include để kéo thông tin từ bảng Events qua mối quan hệ (Navigation Property)
             var registrations = await _context.Registrations
                 .Where(r => r.StudentId == studentId)
                 .Include(r => r.Event)
@@ -278,7 +257,6 @@ namespace EventNestBE.Controllers
                     r.StudentId,
                     r.RegisteredAt,
                     r.IsCheckedIn,
-                    // Lấy các trường của Event thảy ra ngoài cho Frontend dễ dùng
                     EventTitle = r.Event.Title,
                     EventLocation = r.Event.Location,
                     EventStartTime = r.Event.StartTime,
@@ -295,8 +273,6 @@ namespace EventNestBE.Controllers
             return Ok(registrations);
         }
 
-        // 5. API Hủy đăng ký sự kiện (DELETE: api/registrations/{id})
-        // 5. API Hủy đăng ký sự kiện (DELETE: api/registrations/{id})
         [HttpDelete("{id}")]
         public async Task<IActionResult> CancelRegistration(int id)
         {
@@ -306,16 +282,13 @@ namespace EventNestBE.Controllers
                 return NotFound(new { message = "Không tìm thấy thông tin đăng ký cần hủy!" });
             }
 
-            // --- VÁ LỖ HỔNG BẢO MẬT ---
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userRole = User.FindFirstValue(ClaimTypes.Role);
 
-            // Kiểm tra: Nếu KHÔNG phải Admin VÀ ID sinh viên trong đơn đăng ký KHÔNG trùng với ID người đang đăng nhập
             if (userRole != "Admin" && (userIdClaim == null || int.Parse(userIdClaim) != registration.StudentId))
             {
-                return Forbid(); // Cấm không cho hủy đơn của người khác
+                return Forbid();
             }
-            // ---------------------------
 
             if (registration.IsCheckedIn)
             {
@@ -323,8 +296,6 @@ namespace EventNestBE.Controllers
             }
 
             _context.Registrations.Remove(registration);
-
-            // Cập nhật giảm số lượng người tham gia trong Event
             var targetEvent = await _context.Events.FindAsync(registration.EventId);
             if (targetEvent != null && targetEvent.CurrentAttendees > 0)
             {
